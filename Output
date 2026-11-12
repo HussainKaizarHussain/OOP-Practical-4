@@ -1,0 +1,16 @@
+--- 1. Demonstrating std::unique_ptr (Exclusive Ownership) ---
+[Resource Created] DatabaseConnection acquired.
+-> Using Resource: DatabaseConnection
+res1 is now null after ownership transfer.
+-> Using Resource: DatabaseConnection
+[Resource Destroyed] DatabaseConnection released.
+Scope for unique_ptr ended. Resource should be cleaned up above.
+
+--- 2. Demonstrating std::shared_ptr (Shared Ownership) ---
+[Node Created] Node-A
+[Node Created] Node-B
+Inside inner block. Reference count of nodeB: 1
+[Node Destroyed] Node-B
+Exited inner block.
+[Node Destroyed] Node-A
+Scope for shared_ptr ended.
