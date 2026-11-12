@@ -1,0 +1,79 @@
+#include <iostream>
+#include <memory>
+#include <string>
+
+using namespace std;
+
+// A simple resource class to demonstrate lifetime tracking
+class Resource {
+private:
+    string name;
+
+public:
+    Resource(string n) : name(n) {
+        cout << "[Resource Created] " << name << " acquired.\n";
+    }
+
+    ~Resource() {
+        cout << "[Resource Destroyed] " << name << " released.\n";
+    }
+
+    void showDetails() const {
+        cout << "-> Using Resource: " << name << "\n";
+    }
+};
+
+// A dependent class demonstrating shared ownership with std::shared_ptr
+class Node {
+public:
+    string label;
+    shared_ptr<Node> sharedPartner;
+
+    Node(string l) : label(l) {
+        cout << "[Node Created] " << label << "\n";
+    }
+
+    ~Node() {
+        cout << "[Node Destroyed] " << label << "\n";
+    }
+};
+
+int main() {
+    cout << "--- 1. Demonstrating std::unique_ptr (Exclusive Ownership) ---\n";
+    {
+        // unique_ptr manages sole ownership of the resource
+        unique_ptr<Resource> res1 = make_unique<Resource>("DatabaseConnection");
+        res1->showDetails();
+
+        // Ownership can be transferred using std::move, but not copied
+        unique_ptr<Resource> res2 = std::move(res1);
+        
+        if (res1 == nullptr) {
+            cout << "res1 is now null after ownership transfer.\n";
+        }
+        
+        res2->showDetails();
+    } // res2 goes out of scope here, and the resource is automatically destroyed
+    cout << "Scope for unique_ptr ended. Resource should be cleaned up above.\n\n";
+
+    cout << "--- 2. Demonstrating std::shared_ptr (Shared Ownership) ---\n";
+    {
+        shared_ptr<Node> nodeA = make_shared<Node>("Node-A");
+        
+        {
+            shared_ptr<Node> nodeB = make_shared<Node>("Node-B");
+            
+            // Both nodeA and nodeB point to/share relationships
+            nodeA->sharedPartner = nodeB;
+            
+            cout << "Inside inner block. Reference count of nodeB: " 
+                 << nodeB.use_count() << "\n";
+        } // nodeB goes out of scope here, but its underlying resource stays alive if referenced, 
+          // or cleans up if use_count drops to 0.
+        
+        cout << "Exited inner block.\n";
+    } // nodeA goes out of scope here, cleaning up remaining resources.
+    cout << "Scope for shared_ptr ended.\n";
+
+    return 0;
+}
